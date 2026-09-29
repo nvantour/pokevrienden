@@ -994,7 +994,7 @@ const ENEMIES = {
   lekkeband: { name: 'Lekke Band', obj: 'lekkeband', hp: 22, atk: 7, def: 10, spd: 5, moves: ['sissen', 'plof', 'rollen'] },
   hangjongere: { name: 'Hangjongere', look: 'hangjongere', hp: 20, atk: 11, def: 8, spd: 11, moves: ['scooterrondje', 'hardemuziek', 'blikgooien'] },
   parkeerwachter: { name: 'Parkeerwachter', look: 'parkeerwachter', hp: 22, atk: 9, def: 11, spd: 7, moves: ['bonschrijven', 'wielklem', 'fotograferen'] },
-  natasja: { name: 'Natasja', look: 'natasja', hp: 28, atk: 12, def: 10, spd: 13, moves: ['knipoog', 'dansje', 'verleiden', 'glitter'] },
+  natasja: { name: 'Natasja', look: 'natasja', hp: 28, atk: 12, def: 10, spd: 13, moves: ['dansje', 'glitter', 'knipoog', 'dansje', 'glitter', 'verleiden'] },
   marco: { name: 'Marco', look: 'marco', hp: 40, atk: 11, def: 11, spd: 8, moves: ['huurverhoging', 'borginhouden', 'kleinelettertjes', 'servicekosten', 'huurverhoging'] },
   rottekipdij: { name: 'Rotte Kipdij', obj: 'rottekipdij', hp: 22, atk: 12, def: 9, spd: 8, moves: ['vetspetter', 'salmonella', 'kruidenmix'] },
   noodles: { name: 'Noodlemonster', obj: 'noodles', hp: 20, atk: 11, def: 8, spd: 12, moves: ['slurp', 'noedelwurg', 'plakkerig'] },
@@ -1112,9 +1112,9 @@ const MOVES = {
   warmingup: { name: 'Warming-up', kind: 'stat', who: 'self', stat: 'atk', n: 1, say: u => u.name + ' huppelt even op en neer. Hij is er klaar voor.' },
 };
 const ITEMS = {
-  blikje: { name: 'Blikje', desc: 'Koud blikje. Gooi het in een gevecht naar een verzwakte vriend om hem te vangen.', use: 'Blikjes gooi je in een gevecht: TAS > Blikje.' },
-  kroket: { name: 'Broodje Kroket', desc: 'Geeft een vriend 25 HP terug. Te gebruiken in en buiten gevechten.', heal: 25 },
-  frikandel: { name: 'Frikandel Speciaal', desc: 'Met curry, mayo en ui. Geeft een vriend 60 HP terug.', heal: 60 },
+  blikje: { short: 'Vang een verzwakte vriend.', name: 'Blikje', desc: 'Koud blikje. Gooi het in een gevecht naar een verzwakte vriend om hem te vangen.', use: 'Blikjes gooi je in een gevecht: TAS > Blikje.' },
+  kroket: { short: 'Geeft 25 HP terug.', name: 'Broodje Kroket', desc: 'Geeft een vriend 25 HP terug. Te gebruiken in en buiten gevechten.', heal: 25 },
+  frikandel: { short: 'Geeft 60 HP terug.', name: 'Frikandel Speciaal', desc: 'Met curry, mayo en ui. Geeft een vriend 60 HP terug.', heal: 60 },
   airsoft: { name: 'Airsoft-set', key: true, desc: 'Nog in de verpakking. Van Daan.', use: daanUse },
   creami: { name: 'Ninja Creami', key: true, desc: 'Een ijsmachine. De stekker zit nog in het plastic. Van Daan.', use: daanUse },
   fiets: { name: 'Racefiets', key: true, desc: 'Een dure racefiets. Het prijskaartje zit er nog aan. Van Daan.', use: daanUse },
@@ -1122,6 +1122,9 @@ const ITEMS = {
   sleutel: { name: 'Sleutel huisje', key: true, desc: 'Van Marco de Huisbaas. Voor het vakantiehuisje.', use: 'Die heb je straks nodig bij het huisje.' },
   kruiden: { name: 'Verse Kruiden', key: true, desc: 'Voor Kevins herstelsoep.', use: 'Voor Kevins herstelsoep. Zelf koken? Liever niet na Daans gerecht.' },
   truffel: { name: 'Truffel', key: true, desc: 'Een zwarte truffel. Voor Kevins herstelsoep.', use: 'Voor Kevins herstelsoep.' },
+  lijst: { name: 'Literatuurlijst', key: true, desc: 'Van Tom. 400 bronnen, drie gelezen.', use: 'Voor Tom. Hij heeft het nodig tegen zijn scriptie.' },
+  lader: { name: 'Laptoplader', key: true, desc: 'Van Tom. Zonder lader geen scriptie.', use: 'Voor Tom. Hij heeft het nodig tegen zijn scriptie.' },
+  koffie: { name: 'Thermosfles Koffie', key: true, desc: 'Van Tom. Sterke koffie. Gewone koffie, hoor.', use: 'Voor Tom. Hij heeft het nodig tegen zijn scriptie.' },
   boter: { name: 'Echte Roomboter', key: true, desc: 'Geen margarine! Voor Kevins herstelsoep.', use: 'Voor Kevins herstelsoep.' },
   luiers: { name: 'Pak Luiers', key: true, desc: 'Voor de baby van Stan.', use: 'Voor de baby van Stan. Niet voor Tom.' },
   flesje: { name: 'Babyflesje', key: true, desc: 'Voor de baby van Stan.', use: 'Voor de baby van Stan.' },
@@ -1153,7 +1156,11 @@ function makeEnemy(id, lvl) {
 let mode = 'title', frame = 0;
 const G = { map: 'perron', x: 14, y: 3, dir: 'down', party: [], items: { blikje: 0, kroket: 0 }, flags: {}, heal: { map: 'plein', x: 17, y: 5 } };
 const SAVE_KEY = 'pokevrienden' + (location.pathname.includes('speelversie') ? '-speel' : '-bouw');
-function saveGame() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(G)); return true; } catch (e) { return false; } }
+function saveGame() { try { if (!G.party.length) return false; localStorage.setItem(SAVE_KEY, JSON.stringify(G)); saveToast = 90; return true; } catch (e) { return false; } }
+let saveToast = 0;
+function autoSave() { if (G.flags.quentin && !BOT) saveGame(); }
+addEventListener('pagehide', () => { if (G.flags && G.flags.quentin && mode !== 'title') saveGame(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden && G.flags && G.flags.quentin && mode !== 'title') saveGame(); });
 function loadGame() { try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)); if (s && s.party) { Object.assign(G, s); return true; } } catch (e) {} return false; }
 function hasSave() { try { return !!localStorage.getItem(SAVE_KEY); } catch (e) { return false; } }
 
@@ -1178,8 +1185,33 @@ function loadMap(id, x, y, dir) {
   npcs = (map.npcs || []).map(n => Object.assign({ px: n.x * T, py: n.y * T, moving: 0, step: 0, dir: n.dir || 'down', path: '' }, n));
   player.x = x; player.y = y; player.px = x * T; player.py = y * T; player.dir = dir || player.dir; player.moving = 0;
   G.x = x; G.y = y; G.dir = player.dir;
+  resetFollowers();
+  if (G.party.length && G.flags.quentin && !map.noSave) autoSave();
   if (map.music) play(map.music);
   centerCam();
+}
+// the friends you caught walk in a line behind Nino
+let fol = [];
+function resetFollowers() { fol = G.party.map(f => ({ id: f.id, x: player.x, y: player.y, px: player.px, py: player.py, dir: player.dir, step: 0, moving: 0 })); }
+function followStep(oldX, oldY) {
+  syncFollowers();
+  for (let i = fol.length - 1; i >= 0; i--) {
+    const f = fol[i], nx = i ? fol[i - 1].x : oldX, ny = i ? fol[i - 1].y : oldY;
+    if (nx !== f.x || ny !== f.y) { f.dir = nx > f.x ? 'right' : nx < f.x ? 'left' : ny > f.y ? 'down' : 'up'; f.x = nx; f.y = ny; }
+  }
+}
+function syncFollowers() {
+  if (fol.length === G.party.length && fol.every((f, i) => f.id === G.party[i].id)) return;
+  const old = fol; fol = G.party.map((p, i) => old.find(f => f.id === p.id) || Object.assign({}, old[old.length - 1] || { x: player.x, y: player.y, px: player.px, py: player.py, dir: player.dir, step: 0 }, { id: p.id }));
+}
+function moveFollowers() {
+  syncFollowers();
+  const sp = player.run ? 4 : 2;
+  for (const f of fol) {
+    const tx = f.x * T, ty = f.y * T;
+    f.moving = f.px !== tx || f.py !== ty;
+    if (f.moving) { f.px += Math.sign(tx - f.px) * Math.min(sp, Math.abs(tx - f.px)); f.py += Math.sign(ty - f.py) * Math.min(sp, Math.abs(ty - f.py)); f.step += sp; }
+  }
 }
 function drawTextOn(g, s, x, y, col) {
   let cx = Math.round(x);
@@ -1199,6 +1231,7 @@ function centerCam() {
 function updateWorld() {
   // NPC scripted movement
   for (const n of npcs) moveEntity(n);
+  moveFollowers();
   if (!player.moving && player.path && player.path.length) moveEntity(player);   // scripted steps (e.g. stepping back from a closed door)
   if (player.moving) { moveEntity(player); if (!player.moving) arrived(); }
   else if (!script && !dialog && fadeA === 0) {
@@ -1207,7 +1240,8 @@ function updateWorld() {
     if (d) {
       player.dir = d;
       const [dx, dy] = DIRS[d];
-      if (!blocked(player.x + dx, player.y + dy)) { player.x += dx; player.y += dy; player.moving = 1; player.run = keys.b; if (TILES[tileAt(player.x, player.y)].grass) SFX.rustle(); }
+      if (!blocked(player.x + dx, player.y + dy)) { followStep(player.x, player.y); player.x += dx; player.y += dy; player.moving = 1; player.run = keys.b; if (TILES[tileAt(player.x, player.y)].grass) SFX.rustle(); }
+      else if (bumpRead(player.x + dx, player.y + dy)) return;
       else if (frame % 16 === 0) SFX.bump();
     }
   }
@@ -1221,6 +1255,7 @@ function moveEntity(e) {
       if (c === 'u' || c === 'd' || c === 'l' || c === 'r') { e.dir = { u: 'up', d: 'down', l: 'left', r: 'right' }[c]; return; }
       e.dir = d;
       if (e === player && blocked(e.x + DIRS[d][0], e.y + DIRS[d][1])) return;
+      if (e === player) followStep(e.x, e.y);
       e.x += DIRS[d][0]; e.y += DIRS[d][1]; e.moving = 1;
     }
     return;
@@ -1247,12 +1282,20 @@ function arrived() {
     run(function* () { yield battle({ enemy: wl.id, lvl, wild: true }); });
   }
 }
+const signKey = (s) => 'read_' + map.id + '_' + s.x + '_' + s.y;
+function bumpRead(x, y) {
+  const s = (map.signs || []).find(s => s.x === x && s.y === y);
+  if (!s || s.script) return false;
+  G.flags[signKey(s)] = true;
+  run(function* () { yield say(null, ...s.text); });
+  return true;
+}
 function interact() {
   const [dx, dy] = DIRS[player.dir], x = player.x + dx, y = player.y + dy;
   const n = npcAt(x, y);
   if (n && n.talk) { n.dir = { up: 'down', down: 'up', left: 'right', right: 'left' }[player.dir]; run(n.talk); return; }
   const s = (map.signs || []).find(s => s.x === x && s.y === y);
-  if (s) run(s.script || function* () { yield say(null, ...s.text); });
+  if (s) { if (!s.script) G.flags[signKey(s)] = true; run(s.script || function* () { yield say(null, ...s.text); }); }
 }
 
 // ---------------------------------------------------------------- scripts (generators yield commands)
@@ -1322,9 +1365,18 @@ function updateScript() {
 
 // ---------------------------------------------------------------- dialog
 let dialog = null;
+// wrap a text in lines of at most 3 per page; avoid a last page with just one or two words
+function paginate(l) {
+  let best = wrap(l, 212);
+  const lonely = ls => ls.length > 3 && ls.length % 3 === 1 && ls[ls.length - 1].split(' ').length <= 3;
+  for (let w = 206; lonely(best) && w >= 150; w -= 4) { const t = wrap(l, w); if (!lonely(t) && Math.ceil(t.length / 3) <= Math.ceil(best.length / 3)) best = t; }
+  const pages = [];
+  for (let i = 0; i < best.length; i += 3) pages.push(best.slice(i, i + 3));
+  return pages;
+}
 function openDialog(who, lines, onClose, opts, onPick) {
   const pages = [];
-  for (const l of lines) { const ls = wrap(l, 222); for (let i = 0; i < ls.length; i += 2) pages.push(ls.slice(i, i + 2)); }
+  for (const l of lines) pages.push(...paginate(l));
   dialog = { who, pages, i: 0, n: 0, onClose, opts, onPick, sel: 0 };
 }
 function updateDialog() {
@@ -1355,9 +1407,9 @@ function drawDialog() {
     drawBox(4, 101, w, 14); text(d.who, 9, 104, '#d04848', '#f0c8c8');
   }
   let left = d.n;
-  d.pages[d.i].forEach((l, k) => { const s = l.slice(0, Math.max(0, left)); left -= l.length + 1; text(s, 10, 121 + k * 16); });
+  d.pages[d.i].forEach((l, k) => { const s = l.slice(0, Math.max(0, left)); left -= l.length + 1; text(s, 10, 118 + k * 12); });
   const full = d.pages[d.i].join(' ').length;
-  if (d.n >= full && !(d.opts && d.i === d.pages.length - 1) && Math.floor(frame / 15) % 2) { ctx.fillStyle = '#d04848'; ctx.fillRect(224, 146, 7, 2); ctx.fillRect(225, 148, 5, 1); ctx.fillRect(226, 149, 3, 1); ctx.fillRect(227, 150, 1, 1); }
+  if (d.n >= full && !(d.opts && d.i === d.pages.length - 1) && Math.floor(frame / 15) % 2) { ctx.fillStyle = '#d04848'; ctx.fillRect(226, 150, 7, 2); ctx.fillRect(227, 152, 5, 1); ctx.fillRect(228, 153, 3, 1); ctx.fillRect(229, 154, 1, 1); }
   if (d.opts && d.i === d.pages.length - 1 && d.n >= full) {
     const w = Math.max(...d.opts.map(textW)) + 22, h = d.opts.length * 14 + 8;
     drawBox(W - w - 2, 110 - h, w, h);
@@ -1374,7 +1426,9 @@ function startBattle(o, cb) {
   const enemy = o.friend ? Object.assign(makeFriend(o.friend, o.lvl), { wildFriend: true, friend: false }) : makeEnemy(o.enemy, o.lvl);
   enemy.st = { atk: 0, def: 0, acc: 0, spd: 0 };
   if (o.startHp) enemy.hp = Math.max(1, Math.round(enemy.maxhp * o.startHp));
-  const first = o.solo ? Object.assign(makeFriend(o.solo.id, o.solo.lvl), { solo: true }) : pick(G.party.filter(f => f.hp > 0));
+  const alive = G.party.filter(f => f.hp > 0), fresh = alive.filter(f => f.id !== G.lastLead);
+  const first = o.solo ? Object.assign(makeFriend(o.solo.id, o.solo.lvl), { solo: true }) : pick(fresh.length ? fresh : alive);
+  if (!o.solo) G.lastLead = first.id;
   B = { o, cb, enemy, me: first, phase: 'intro', t: 0, q: [], msg: null, sel: 0, msel: 0, verbindUsed: false, verbindLeft: o.verbindMax || 1,
         eShow: enemy.hp, mShow: 0, eX: 260, mX: -60, shake: { e: 0, m: 0 }, flash: { e: 0, m: 0 }, anim: null, eFaint: 0, mFaint: 0, can: null, tutorial: o.tutorial, turn: 0, participants: new Set() };
   B.me.st = { atk: 0, def: 0, acc: 0, spd: 0 }; B.me.status = B.me.status || null;
@@ -1550,6 +1604,7 @@ function checkFaint() {
     bq(act(() => { B.mFaint = 1; SFX.faint(); }), anim({ type: 'wait', n: 30 }), msg(m.name + (B.o.final ? ' gaat neer... en staat niet meer op.' : ' ligt knock-out!')));
     const next = G.party.find(f => f.hp > 0);
     const nexts = G.party.filter(f => f.hp > 0);
+    if (next && B.o.final && B.verbindLeft > 0 && G.flags.verbinden && !B.verbindHint) { B.verbindHint = true; bq(msg('TIP: vergeet niet te VERBINDEN! Samen zijn jullie sterker dan Rico.')); }
     if (next) bq(act(() => sendOut(pick(nexts))), act(() => { B.phase = 'menu'; }));
     else bq(msg('Nino heeft geen fitte vrienden meer...'), msg('Nino rent terug om even bij te komen.'), act(() => endBattle('lose')));
     return true;
@@ -1579,12 +1634,14 @@ function endBattle(result) {
   B.result = result;
 }
 function finishBattle() {
+  if (B.result === 'win' && map) G.flags['wins_' + map.id] = (G.flags['wins_' + map.id] || 0) + 1;
   const cb = B.cb, r = B.result, wasCaught = r === 'caught', loseLine = B.o.loseLine, loseSay = B.o.loseSay;
   for (const f of G.party) { f.st = null; f.fainted = false; if (r === 'lose') { f.hp = f.maxhp; f.status = null; } }
   B = null;
   mode = 'world';
   if (mus.song && SONGS[mus.song] && SONGS[mus.song].once) mus.after = map.music || 'town'; else play(map.music || 'town');
-  if (r === 'lose') { const h = G.heal; script = null; if (G.flags.rip) G.flags.rip = []; saveGame(); run(function* () { yield fade(1); loadMap(h.map, h.x, h.y, 'up'); yield fade(0); if (loseLine) yield say(null, loseLine); yield say(h.who || 'KIOSK', h.line || 'Tjonge, jullie zien er niet uit. Iedereen is weer fit!'); if (loseSay) yield say(loseSay[0], loseSay[1]); }); return; }
+  if (r === 'lose') { const h = G.heal; script = null; if (G.flags.rip) G.flags.rip = []; saveGame(); run(function* () { yield fade(1); loadMap(h.map, h.x, h.y, 'up'); yield fade(0); if (loseLine) yield say(null, loseLine); yield say(h.who || 'KIOSK', h.line || 'Tjonge, jullie zien er niet uit. Iedereen is weer fit!'); if (loseSay) for (const [w, l] of loseSay) yield say(w, l); yield say(null, pick(LOSE_TIPS)); }); return; }
+  if (r !== 'lose') autoSave();
   cb(wasCaught ? 'caught' : r);
 }
 function playerAction(a) {
@@ -1745,15 +1802,16 @@ function updateBattleMenu() {
 // ---------------------------------------------------------------- catch scene (starter)
 let CS = null;
 function startCatch(id, cb) { CS = { id, cb, t: 0 }; mode = 'catch'; mus.song = null; mus.after = null; }
+// timeline: throw (0-80), trying to down it (80-190), PROEST (190+, waits for the player), "never says no" (waits again)
 function updateCatch() {
   CS.t++;
   const t = CS.t;
   if (t === 20) SFX.throw();
   if (t === 80) SFX.pssht();
-  if (t === 105) SFX.glug();
-  if (t === 150) { noise(0.5, 0.5, undefined, 3000); voice('sawtooth', 300, 120, 0.3, 0.12); }
-  if (t === 255) { SFX.caught(); mus.after = map.music; }
-  if (t > 320 && (pressed.a || t > 520)) { const cb = CS.cb; CS = null; mode = 'world'; if (!mus.song) play(map.music); cb(); }
+  if (t === 110) SFX.glug();
+  if (t === 190) { noise(0.5, 0.5, undefined, 3000); voice('sawtooth', 300, 120, 0.3, 0.12); }
+  if (!CS.t2 && t > 300 && pressed.a) { CS.t2 = t; SFX.caught(); mus.after = map.music; return; }
+  if (CS.t2 && t > CS.t2 + 60 && pressed.a) { const cb = CS.cb; CS = null; mode = 'world'; if (!mus.song) play(map.music); cb(); }
 }
 
 // ---------------------------------------------------------------- credits
@@ -1835,7 +1893,7 @@ function updateMenu() {
     SFX.select();
     const o = opts[MENU.sel];
     if (o === 'SLUITEN') MENU = null;
-    else if (o === 'OPSLAAN') MENU.sub = saveGame() ? 'saved' : 'nosave';
+    else if (o === 'OPSLAAN') { MENU.sub = saveGame() ? 'saved' : 'nosave'; saveToast = 0; }
     else if (o.startsWith('GELUID')) { muted = !muted; if (!muted) { audioInit(); if (actx) mus.next = actx.currentTime + 0.05; } }
     else if (o === 'OPNIEUW') { MENU.sub = 'confirm'; MENU.yes = false; }
     else if (o === 'UITLEG') { MENU.sub = 'uitleg'; MENU.page = 0; }
@@ -1980,6 +2038,12 @@ function* kioskHeal() {
   yield say('KIOSK', 'Alsjeblieft. Iedereen is weer helemaal fit!');
   yield* restock('KIOSK');
 }
+const LOSE_TIPS = [
+  'TIP: Vecht met andere mensen of loop door het hoge gras. Zo worden je vrienden sterker.',
+  'TIP: Train eerst in het hoge gras. Elk gewonnen gevecht maakt je vrienden sterker.',
+  'TIP: Een broodje kroket geeft HP terug. Bij genees-punten vul je ze aan.',
+  'TIP: Wissel via TEAM van vriend als iemand bijna knock-out gaat.',
+];
 function* restock(who) {
   if ((G.items.kroket || 0) >= 3) return;
   G.items.kroket = 3; SFX.item();
@@ -2025,6 +2089,7 @@ function* intro() {
   yield say('QUENTIN', 'Sorry! Ik vind bier eigenlijk vies. Maar ja zeggen, dat kan ik wel.');
   yield say(null, 'Quentin is nu je vriend voor het leven!', 'Nino krijgt 5 blikjes en 3 broodjes kroket.');
   yield say(null, 'TIP: Vrienden vang je met een blikje. Verzwak ze eerst, dan zeggen ze sneller ja.', 'Met ' + K_MENU + ' zie je je team en je tas, lees je de uitleg en kun je opslaan of opnieuw beginnen.');
+  yield say(null, 'Het avontuur begint! Loop rond, lees de borden en praat met alles en iedereen.', 'Linksboven zie je altijd wat je volgende missie is.');
   saveGame();
 }
 
@@ -2039,7 +2104,7 @@ const HOMES = {
   huisje: { map: 'huisje', x: 15, y: 8, who: 'KOELBOX', line: 'Een koud blikje voor iedereen. Iedereen is weer fit!' },
 };
 const partyLvl = () => Math.round(G.party.reduce((a, f) => a + f.lvl, 0) / Math.max(1, G.party.length));
-const TUNE = { ricoFirst: 6, ricoLater: 3, bakfiets: 1 };
+const TUNE = { ricoFirst: 8, ricoLater: 3, bakfiets: 1 };
 function* chapter(n, title, id, x, y, dir) {
   yield fade(1);
   yield card('HOOFDSTUK ' + n, title);
@@ -2101,6 +2166,12 @@ function* daanJoined() {
 }
 function* natasjaFight() {
   if (G.flags.natasja) return;
+  if (!(G.flags.wins_azuid > 0) && !G.flags.jordy && !G.flags.natasjaTip) {
+    G.flags.natasjaTip = true;
+    yield say('UITSMIJTER', 'Ho, even een tip, jongens.', 'Natasja is sterk. Versla eerst wat mensen buiten, of loop door het hoge gras in het park. Dan worden jullie sterker.');
+    const k = yield ask(null, 'Toch meteen tegen Natasja?', ['Eerst trainen', 'Ja, vechten']);
+    if (k === 0) { yield walk('player', 'D'); return; }
+  }
   yield say(null, 'Op het podium danst een vrouw rond een paal. De muziek staat keihard.');
   yield emote('natasja');
   yield say('NATASJA', 'Hé schatjes... jullie zien eruit alsof jullie iets zoeken.', 'Een ijsmachine? Die heeft die rossige jongen hier vanochtend laten staan. Om tien uur. Ik vroeg niks.', 'Wil je hem terug? Dan moet je eerst langs Natasja...');
@@ -2238,7 +2309,7 @@ function* dish() {
   yield* oberTalk();
 }
 function* oberTalk() {
-  if (!G.flags.ziek) { yield say('OBER', 'Welkom in De Drie Sterren. Helaas is de chef er vandaag niet.', 'Er staat achterin nog wel een bord op tafel. Geen idee van wie.'); return; }
+  if (!G.flags.ziek) { yield say('OBER', 'Welkom in De Drie Sterren. Helaas is de chef er vandaag niet.', 'Er staat hier vooraan, bij de ingang, nog wel een bord op tafel. Geen idee van wie.'); return; }
   if (!G.flags.genezen) {
     yield say('OBER', 'Oei. Jullie zien groen. Hebben jullie van dat gerecht gegeten?', 'Daar helpt geen broodje kroket tegen. Alleen de kookkunst van een echte chef kan dit genezen.');
     yield say('OBER', 'Onze chef, een man met een oudemannenpetje, was vanochtend hier. Hij wilde zijn beroemde herstelsoep maken.', 'Hij zocht verse kruiden, een truffel en echte roomboter. Daarna is hij verdwenen.');
@@ -2320,8 +2391,25 @@ MAPS.restaurant = {
 };
 
 // ---------------------------------------------------------------- chapter 4: the forest and Tom
-function* tomScene() {
+const TOM_ITEMS = { lijst: 'zijn literatuurlijst', lader: 'zijn laptoplader', koffie: 'zijn koffie' };
+const tomMissing = () => Object.keys(TOM_ITEMS).filter(k => !G.items[k]);
+function* tomGive(k, who, line) {
+  if (G.items[k] || G.flags.scriptie) return;
+  yield say(who, line);
+  G.items[k] = 1; SFX.item();
+  yield say(null, 'Nino krijgt ' + ITEMS[k].name + '!', tomMissing().length ? 'Spullen van Tom: ' + (3 - tomMissing().length) + ' van de 3.' : 'Alle spullen van Tom zijn compleet! Naar de open plek bovenaan.');
+}
+function* tomAsk() {
+  if (G.flags.tomAsk) { yield say('TOM', 'Ik mis nog ' + tomMissing().map(k => TOM_ITEMS[k]).join(', ') + '. Vraag het de mensen in het bos.'); return; }
+  G.flags.tomAsk = true;
   yield say(null, 'Op de open plek staat Tom. Hij praat tegen een stapel papier.');
+  yield say('TOM', 'Nino! Ik moet mijn scriptie verslaan. Vandaag. Na elf jaar.', 'Maar ik mis mijn spullen: ' + tomMissing().map(k => TOM_ITEMS[k]).join(', ') + '.', 'Ik heb ze ergens in het bos laten liggen. De mensen hier hebben ze vast gevonden.');
+  yield say('NINO', 'We gaan ze halen. Praat met iedereen in het bos, jongens.');
+}
+function* tomScene() {
+  if (tomMissing().length) { yield* tomAsk(); if (player.y <= 4) yield walk('player', 'D'); return; }
+  for (const k of Object.keys(TOM_ITEMS)) G.items[k] = 0;
+  yield say('TOM', 'Mijn lijst, mijn lader, mijn koffie. Alles is er. Nu ben ik er klaar voor.');
   yield say('TOM', 'Jij... jij bent al elf jaar mijn scriptie. Elf jaar! Vandaag maak ik je af.');
   yield say(null, 'De scriptie komt tot leven!');
   yield say('TOM', 'Tijd voor de zware middelen.');
@@ -2334,6 +2422,7 @@ function* tomScene() {
 }
 function* tomCatch() {
   if (!G.flags.scriptie) { yield* tomScene(); return; }
+  if (false) return;
   yield say('TOM', 'Mee op weekend? Eerst even zien of jullie echt zijn. Kom maar op.');
   const r = yield battle({ friend: 'tom', lvl: 14, wild: true, noRun: true, startHp: 0.5 });
   if (r !== 'caught') { yield say('TOM', 'Ik zweef nog even. Kom maar terug.'); return; }
@@ -2346,10 +2435,10 @@ MAPS.bos = {
   labels: [{ x: 56, y: 3, text: 'BOSWACHTER', col: '#ffffff', bg: '#5a6a3a' }],
   npcs: [
     { id: 'boswachter', x: 4, y: 5, dir: 'left', look: 'boswachter', talk: function* () { yield* healSpot('BOSWACHTER', ['Even uitrusten? Ik heb thee. Gewone thee, hoor.'], { map: 'bos', x: 3, y: 6 }); } },
-    { id: 'w1', x: 8, y: 12, dir: 'down', look: 'wandelaar', talk: function* () { yield say('WANDELAAR', 'Ik zag een man in een groen colbert. Hij stond tegen een boom te praten.', 'Hij zei: "Jij snapt me tenminste."'); } },
-    { id: 'w2', x: 22, y: 7, dir: 'left', look: 'mountainbiker', talk: function* () { yield say('MOUNTAINBIKER', 'Er zat een gast in een boom. Hij zei dat hij "het universum aan het ordenen" was.', 'Met een scriptie onder zijn arm. Hij lag helemaal dubbel.'); } },
-    { id: 'w3', x: 22, y: 16, dir: 'right', look: 'wandelaar', talk: function* () { yield say('WANDELAAR', 'Die jongen probeerde een eekhoorn uit te leggen hoe literatuuronderzoek werkt.', 'De eekhoorn leek het te snappen. Ik niet.'); } },
-    { id: 'w4', x: 11, y: 9, dir: 'down', look: 'boswachter', talk: function* () { yield say('BOSWACHTER', 'Iemand heeft "SCRIPTIE = VIJAND" in een boom gekerfd.', 'Hij liep richting de open plek, daar bovenaan.'); } },
+    { id: 'w1', x: 8, y: 12, dir: 'down', look: 'wandelaar', talk: function* () { yield say('WANDELAAR', 'Ik zag een man in een groen colbert. Hij stond tegen een boom te praten.', 'Hij zei: "Jij snapt me tenminste."'); yield* tomGive('lijst', 'WANDELAAR', 'Hij liet deze lijst vallen. Vierhonderd bronnen. Drie afgevinkt.'); } },
+    { id: 'w2', x: 22, y: 7, dir: 'left', look: 'mountainbiker', talk: function* () { yield say('MOUNTAINBIKER', 'Er zat een gast in een boom. Hij zei dat hij "het universum aan het ordenen" was.'); yield* tomGive('lader', 'MOUNTAINBIKER', 'Deze laptoplader hing aan een tak. Die is vast van hem.'); } },
+    { id: 'w3', x: 22, y: 16, dir: 'right', look: 'wandelaar', talk: function* () { yield say('WANDELAAR', 'Die jongen probeerde een eekhoorn uit te leggen hoe literatuuronderzoek werkt.', 'De eekhoorn leek het te snappen. Ik niet.'); yield* tomGive('koffie', 'WANDELAAR', 'Hij vergat zijn thermosfles. Ik heb er niet van gedronken. Echt niet.'); } },
+    { id: 'w4', x: 11, y: 9, dir: 'down', look: 'boswachter', talk: function* () { yield say('BOSWACHTER', 'Iemand heeft "SCRIPTIE = VIJAND" in een boom gekerfd.', 'Hij staat op de open plek, daar bovenaan. De wandelaars hier hebben zijn spullen gevonden.'); } },
     { id: 'tomNpc', x: 15, y: 2, dir: 'down', look: 'tom', hide: () => hasFriend('tom'), talk: tomCatch },
   ],
   props: [{ x: 16, y: 2, spr: 'scriptieprop', hide: () => G.flags.scriptie }],
@@ -2399,9 +2488,9 @@ function* stanTalk() {
     G.flags.stanPlan = true;
     return;
   }
+  if (G.flags.vaderschap) { yield say('STAN', 'Volgens de planning is dit het moment. Laat maar zien wat jullie kunnen!'); yield* stanCatch(); return; }
   if (babyMissing().length) { yield say('STAN', 'Nog nodig: ' + babyMissing().map(k => BABY[k]).join(', ') + '.', 'Volgens mijn planning hadden we al lang weg moeten zijn...'); return; }
-  if (!G.flags.vaderschap) { yield* stanFight(); return; }
-  yield* stanCatch();
+  yield* stanFight();
 }
 function* stanFight() {
   yield say('STAN', 'Jullie hebben alles! Luiers, flesje, knuffel. Nu kan ik eindelijk...');
@@ -2412,7 +2501,7 @@ function* stanFight() {
   G.flags.vaderschap = true;
   for (const k of Object.keys(BABY)) G.items[k] = 0;
   yield say(null, 'Luier om. Flesje erin. Knuffel erbij.', '...', 'De baby slaapt.');
-  yield say('STAN', 'Hij slaapt. Hij SLAAPT. Jongens, jullie zijn helden.', 'De oppas neemt het over. Ik mag mee! Maar volgens de planning moet ik eerst zien of jullie sterk genoeg zijn.');
+  yield say('STAN', 'Hij slaapt. Hij SLAAPT. Jongens, jullie zijn helden.', 'Guus neemt het over. Ik mag mee! Maar volgens de planning moet ik eerst zien of jullie sterk genoeg zijn.');
   yield* stanCatch();
 }
 function* stanCatch() {
@@ -2507,7 +2596,7 @@ function* ricoFight() {
   G.flags.ricoTries = tries + 1;   // counted before the fight: after a loss the story restarts from the koelbox
   const r = yield battle({ enemy: 'rico', lvl: Math.max(tries ? 20 : 22, partyLvl() + (tries ? TUNE.ricoLater : TUNE.ricoFirst)), trainer: 'Rico Verhoeven', boss: 'rico', final: true, verbindMax: tries ? 3 : 1,
     startMsg: tries ? ['Nino voelt het: de groep is sterker dan ooit.', 'VERBINDEN kan deze keer 3 keer in dit gevecht!'] : null,
-    loseLine: 'Rico zet de hele groep netjes naast de koelbox neer. "Nog een keer?"', loseSay: tries ? null : ['NINO', 'Ik zei toch dat we het niet zouden redden.'] });
+    loseLine: 'Rico zet de hele groep netjes naast de koelbox neer. "Nog een keer?"', loseSay: tries ? [[null, 'Praat nog een keer met Rico om het opnieuw te proberen.']] : [['NINO', 'Ik zei toch dat we het niet zouden redden.'], [null, 'Maar opgeven is geen optie! Praat nog een keer met Rico om het opnieuw te proberen.']] });
   if (r !== 'win') { G.flags.rip = []; return; }
   G.flags.rico = true; saveGame();
   yield say('RICO VERHOEVEN', '...', 'Ik heb tegen de grootste vechters ter wereld gestaan. Maar nog nooit tegen zo\'n hechte vriendengroep.', 'Jullie hebben iets wat ik niet kan trainen. Veel plezier dit weekend.');
@@ -2543,7 +2632,7 @@ MAPS.huisje = {
   ],
 };
 MAPS.huisbinnen = {
-  id: 'huisbinnen', music: 'ending', bg: 'indoor', rows: MAP_ROWS.huisbinnen,
+  id: 'huisbinnen', music: 'ending', bg: 'indoor', noTrain: true, rows: MAP_ROWS.huisbinnen,
   npcs: ['quentin', 'daan', 'kevin', 'tom', 'stan'].map((id, i) => ({ id: 'f_' + id, x: [3, 3, 8, 8, 6][i], y: [3, 4, 3, 4, 5][i], dir: ['right', 'right', 'left', 'left', 'up'][i], look: id,
     hide: () => (G.flags.rip || []).includes(id), talk: function* () { yield say(FRIENDS[id].name.toUpperCase(), END_LINES[id]); } })),
   signs: [{ x: 10, y: 1, text: ['Het haardvuur knettert. Iemand heeft er een frikandel in gegooid.'] }, { x: 1, y: 1, text: ['Een bank. Daar slaapt straks iemand op. Waarschijnlijk Tom.'] }],
@@ -2564,8 +2653,14 @@ function drawWorld() {
     if (TILES[tileAt(it.x, it.y)].grass) { if (Math.floor(frame / 20) % 3 === 0) { ctx.fillStyle = '#ffffff'; ctx.fillRect(sx + 7, sy + 5, 2, 2); } }
     else { const img = ITEM_SPR[it.spr || it.item] || ITEM_SPR.blikje; ctx.drawImage(img, sx + Math.floor((16 - img.width) / 2), sy + 15 - img.height); if (Math.floor(frame / 15) % 2) { ctx.fillStyle = '#ffffff'; ctx.fillRect(sx + 13, sy + 1, 1, 3); ctx.fillRect(sx + 12, sy + 2, 3, 1); } }
   }
+  for (const s of map.signs || []) if (!s.script && !G.flags[signKey(s)]) {
+    const sx = s.x * T - cx + 4, sy = s.y * T - cy - 10 + (Math.floor(frame / 20) % 2);
+    ctx.fillStyle = OUT; ctx.fillRect(sx - 1, sy - 1, 11, 8); ctx.fillStyle = '#ffffff'; ctx.fillRect(sx, sy, 9, 6); ctx.fillRect(sx + 2, sy + 6, 2, 2);
+    ctx.fillStyle = '#304868'; ctx.fillRect(sx + 1, sy + 2, 1, 1); ctx.fillRect(sx + 4, sy + 2, 1, 1); ctx.fillRect(sx + 7, sy + 2, 1, 1);
+  }
   // entities sorted by y
   const ents = npcs.filter(n => !isHidden(n)).map(n => ({ e: n, id: n.look }));
+  if (!player.hidden && !map.noTrain) for (const f of fol) if (f.px !== player.px || f.py !== player.py || f.moving) ents.push({ e: f, id: f.id });
   if (!player.hidden) ents.push({ e: player, id: 'nino' });
   ents.sort((a, b) => a.e.py - b.e.py);
   for (const { e, id } of ents) {
@@ -2586,6 +2681,31 @@ function drawWorld() {
     const e = emo.id === 'player' ? player : npcs.find(n => n.id === emo.id);
     if (e) { const sx = Math.round(e.px - cx) + 4, sy = Math.round(e.py - cy) - 20 - Math.min(4, emo.t); ctx.fillStyle = OUT; ctx.fillRect(sx - 1, sy - 1, 10, 13); ctx.fillStyle = '#ffffff'; ctx.fillRect(sx, sy, 8, 11); ctx.fillStyle = '#d04848'; ctx.fillRect(sx + 3, sy + 2, 2, 5); ctx.fillRect(sx + 3, sy + 8, 2, 2); }
   }
+}
+function mission() {
+  const f = G.flags, n = ks => ks.filter(k => G.items[k]).length;
+  if (!f.quentin) return null;
+  if (!f.conducteur) return 'Loop naar de trap. De conducteur wacht.';
+  if (!f.prologueDone) return 'Ga naar Arnhem-Zuid: rechts op het plein.';
+  if (!hasFriend('daan')) return f.daanSeen ? 'Daan is in het park!' : 'Spullen van Daan: ' + n(['airsoft', 'creami', 'fiets', 'warcraft']) + '/4';
+  if (!f.marco) return 'Haal de sleutel bij Verhuur Marco.';
+  if (!f.ch3) return 'Neem bus 3 naar de binnenstad.';
+  if (!hasFriend('kevin')) return !f.ziek ? 'Zoek Kevin in het restaurant.' : !f.genezen ? (n(['kruiden', 'truffel', 'boter']) < 3 ? 'Ingrediënten voor Kevin: ' + n(['kruiden', 'truffel', 'boter']) + '/3' : 'Breng alles naar de keuken!') : 'Vang Kevin in de keuken.';
+  if (!f.ch4) return 'Loop naar het bos: rechts in de stad.';
+  if (!hasFriend('tom')) return f.scriptie ? 'Vang Tom op de open plek.' : !f.tomAsk ? 'Vind Tom op de open plek.' : tomMissing().length ? 'Spullen van Tom: ' + (3 - tomMissing().length) + '/3' : 'Terug naar Tom!';
+  if (!f.ch5) return 'Loop naar Lent: rechtsonder in het bos.';
+  if (!hasFriend('stan')) return !f.stanPlan ? 'Zoek Stan in zijn huis.' : f.vaderschap ? 'Vang Stan: praat met hem.' : babyMissing().length ? 'Spullen voor de baby: ' + (3 - babyMissing().length) + '/3' : 'Terug naar Stan!';
+  if (!f.ch6) return 'Loop naar het huisje: rechts in Lent.';
+  if (!f.rico) return f.ricoTries ? 'Probeer het nog eens: praat met Rico.' : 'Versla Rico Verhoeven.';
+  return null;
+}
+function drawMission() {
+  const m = mission();
+  if (!m || dialog || MENU || map.noTrain) return;
+  const w = textW(m) + 12;
+  ctx.globalAlpha = 0.9; ctx.fillStyle = OUT; ctx.fillRect(2, 2, w + 2, 14); ctx.fillStyle = '#2a3a5a'; ctx.fillRect(3, 3, w, 12); ctx.globalAlpha = 1;
+  ctx.fillStyle = '#f0c030'; ctx.fillRect(5, 7, 3, 3);
+  text(m, 11, 5, '#ffffff', '#101830');
 }
 function drawTrain(x, y) {
   for (let c = 0; c < 3; c++) {
@@ -2695,9 +2815,9 @@ function drawBattle() {
   // bottom box
   if (b.msg) {
     drawBox(0, 112, W, 48);
-    const lines = wrap(b.msg.s, 222); let left = b.msg.n;
-    lines.slice(0, 2).forEach((l, k) => { text(l.slice(0, Math.max(0, Math.floor(left))), 10, 121 + k * 16); left -= l.length + 1; });
-    if (b.msg.n >= b.msg.s.length && Math.floor(frame / 15) % 2) { ctx.fillStyle = '#d04848'; ctx.fillRect(224, 146, 7, 2); ctx.fillRect(225, 148, 5, 1); ctx.fillRect(226, 149, 3, 1); ctx.fillRect(227, 150, 1, 1); }
+    const lines = wrap(b.msg.s, 212); let left = b.msg.n;
+    lines.slice(0, 3).forEach((l, k) => { text(l.slice(0, Math.max(0, Math.floor(left))), 10, 118 + k * 12); left -= l.length + 1; });
+    if (b.msg.n >= b.msg.s.length && Math.floor(frame / 15) % 2) { ctx.fillStyle = '#d04848'; ctx.fillRect(226, 150, 7, 2); ctx.fillRect(227, 152, 5, 1); ctx.fillRect(228, 153, 3, 1); ctx.fillRect(229, 154, 1, 1); }
   } else if (b.phase === 'menu') drawBattleMenu();
   else drawBox(0, 112, W, 48);
 }
@@ -2731,7 +2851,7 @@ function drawBattleMenu() {
   } else if (b.sub === 'bag') {
     const list = bagList(), top = clamp(b.isel - 1, 0, Math.max(0, list.length - 3));
     list.slice(top, top + 3).forEach((it, i) => { text(ITEMS[it].name, 18, 118 + i * 13); if (!ITEMS[it].key) text('x' + (G.items[it] || 0), 124, 118 + i * 13); if (top + i === b.isel) cursor(10, 118 + i * 13); });
-    drawBox(150, 112, 90, 48); wrap(ITEMS[list[b.isel]].desc, 76).slice(0, 3).forEach((l, i) => text(l, 156, 118 + i * 11));
+    drawBox(150, 112, 90, 48); wrap(ITEMS[list[b.isel]].short || 'Speciaal voorwerp.', 76).slice(0, 3).forEach((l, i) => text(l, 156, 118 + i * 11));
   } else if (b.sub === 'team') {
     G.party.forEach((f, i) => { text(f.name + '  Lv' + f.lvl + '  ' + f.hp + '/' + f.maxhp, 18, 118 + i * 10); if (i === b.tsel) cursor(10, 118 + i * 10); });
   }
@@ -2807,10 +2927,10 @@ function drawCatch() {
   if (t < 80) {
     ctx.drawImage(img, 125, 52);
     if (t > 20) { const k = (t - 20) / 60, x = lerp(20, 135, k), y = lerp(120, 70, k) - Math.sin(k * Math.PI) * 60; ctx.save(); ctx.translate(x, y); ctx.rotate(k * 14); ctx.drawImage(ITEM_SPR.blikje, -5, -7); ctx.restore(); }
-  } else if (t < 150) drawDrinker(img, 125, 52, { type: 'drink', t: Math.min((t - 80) / 1.75 + 20, 58) });
+  } else if (t < 190) drawDrinker(img, 125, 52, { type: 'drink', t: Math.min((t - 80) / 2.4 + 20, 58) });
   else {
     // PROEST: he can't down it and doesn't even like beer
-    const k = t - 150, jit = k < 50 ? (k % 4 < 2 ? -2 : 2) : 0;
+    const k = t - 190, jit = k < 50 ? (k % 4 < 2 ? -2 : 2) : 0;
     ctx.drawImage(img, 125 + jit, 52);
     if (k < 70) for (let i = 0; i < 26; i++) { const a = -Math.PI / 2 + (i / 26 - 0.5) * 2.6, d = Math.min(k, 40) * (0.6 + (i % 5) * 0.2); ctx.fillStyle = i % 3 ? '#fff8d0' : '#ffffff'; ctx.fillRect(Math.round(150 + Math.cos(a) * d), Math.round(76 + Math.sin(a) * d * 0.7 + k * 0.3), 2, 2); }
     ctx.save(); ctx.translate(176, 98); ctx.rotate(1.5); ctx.drawImage(ITEM_SPR.blikje, -5, -7); ctx.restore();
@@ -2818,9 +2938,10 @@ function drawCatch() {
   }
   drawBox(0, 118, W, 42);
   if (t < 80) text('Nino gooit Quentin een koud blikje toe!', 10, 126);
-  else if (t < 150) text('PSSSHT! Quentin probeert een atje te trekken...', 10, 126);
-  else if (t < 255) { text('PROEST! Quentin kan niet atten.', 10, 126); text('En hij houdt niet eens van bier.', 10, 142); }
-  else { text('Maar Quentin zegt nooit nee.', 10, 126); if (t > 275) text('Vrienden voor het leven!', 10, 142); }
+  else if (t < 190) text('PSSSHT! Quentin probeert een atje te trekken...', 10, 126);
+  else if (!CS.t2) { text('PROEST! Quentin kan niet atten.', 10, 126); text('En hij houdt niet eens van bier.', 10, 142); }
+  else { text('Maar Quentin zegt nooit nee.', 10, 126); text('Vrienden voor het leven!', 10, 142); }
+  if (((!CS.t2 && t > 300) || (CS.t2 && t > CS.t2 + 60)) && Math.floor(frame / 15) % 2) { ctx.fillStyle = '#d04848'; ctx.fillRect(224, 150, 7, 2); ctx.fillRect(225, 152, 5, 1); ctx.fillRect(226, 153, 3, 1); }
 }
 function drawMenu() {
   const opts = menuOpts(), h = opts.length * 13 + 10;
@@ -2857,7 +2978,7 @@ function drawMenu() {
     if (MENU.note) wrap(MENU.note, 220).slice(0, 2).forEach((l, i) => text(l, 10, 121 + i * 16, '#d04848', '#f0c8c8'));
     else wrap(it.desc, 220).slice(0, 2).forEach((l, i) => text(l, 10, 121 + i * 16));
   } else if (MENU.sub === 'saved' || MENU.sub === 'nosave') {
-    drawBox(0, 112, W, 48); text(MENU.sub === 'saved' ? 'Het spel is opgeslagen!' : 'Opslaan lukt niet in deze browser.', 10, 121);
+    drawBox(0, 112, W, 48); if (MENU.sub === 'saved') { text('Het spel is opgeslagen!', 10, 118); text('Kies later VERDER SPELEN op het titelscherm.', 10, 132); text('Het spel slaat ook vanzelf op.', 10, 144); } else text('Opslaan lukt niet in deze browser.', 10, 121);
   } else if (MENU.sub === 'confirm') {
     drawBox(0, 112, W, 48);
     text('Opnieuw beginnen?', 10, 120); text('Je voortgang gaat verloren.', 10, 136);
@@ -2890,10 +3011,11 @@ function draw() {
       break;
     }
     case 'battleOut': drawBattle(); ctx.fillStyle = 'rgba(16,16,24,' + clamp(B.outT / 20, 0, 1) + ')'; ctx.fillRect(0, 0, W, H); break;
-    default: drawWorld(); if (dialog) drawDialog();
+    default: drawWorld(); if (mode === 'world' && !script) drawMission(); if (dialog) drawDialog();
   }
   if (fadeA > 0 && mode !== 'narrate' && mode !== 'card') { ctx.fillStyle = 'rgba(16,16,24,' + fadeA + ')'; ctx.fillRect(0, 0, W, H); }
   if (MENU) drawMenu();
+  if (saveToast > 0 && mode !== 'title') { saveToast--; const w = textW('Opgeslagen') + 10; ctx.globalAlpha = Math.min(1, saveToast / 20); drawBox(W - w - 2, H - 20, w, 17); text('Opgeslagen', W - w + 3, H - 15); ctx.globalAlpha = 1; }
 }
 
 // ---------------------------------------------------------------- update + loop
@@ -2933,6 +3055,7 @@ window.__game = {
   get mode() { return mode; }, get G() { return G; }, get B() { return B; }, get dialog() { return dialog; }, get script() { return script; },
   get player() { return player; }, get map() { return map && map.id; }, keys, pressed,
   step(n = 1) { for (let i = 0; i < n; i++) update(); draw(); },
+  fast(n = 1) { for (let i = 0; i < n; i++) update(); },
   press(a) { pressed[a] = true; },
   warp(id, x, y, dir) { mode = 'world'; loadMap(id, x, y, dir || 'down'); fadeA = 0; fadeTo = 0; },
   run(fn) { run(fn); },
